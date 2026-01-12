@@ -1,24 +1,28 @@
-import express from "express";
 import dotenv from "dotenv";
-import connectDB from "./config/db.js";
-
 dotenv.config();
+
+import express from "express";
+import connectDB from "./config/db.js";
+import authRoutes from "./routes/auth.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// middleware
+// ✅ MUST be BEFORE routes
 app.use(express.json());
+
+// routes
+app.use("/api/auth", authRoutes);
 
 // test route
 app.get("/", (req, res) => {
   res.json({ message: "AuthHub backend running 🚀" });
 });
 
-// connect DB
+// DB
 connectDB();
 
-// start server
+// server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
