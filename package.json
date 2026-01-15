@@ -1,5 +1,24 @@
 {
-  "dependencies": {
-    "jsonwebtoken": "^9.0.3"
+  "name": "authhub",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shubham25041/AuthHub.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Shubham25041/AuthHub/issues"
+  },
+  "homepage": "https://github.com/Shubham25041/AuthHub#readme",
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

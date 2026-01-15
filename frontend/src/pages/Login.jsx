@@ -1,21 +1,78 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Used to show error messages from validation / backend
   const [error, setError] = useState("");
 
-  const handleLogin = () => {
+  // Used to show success message for 3 seconds
+  const [success, setSuccess] = useState("");
+
+  // Used to redirect user after successful login
+  const navigate = useNavigate();
+
+  // Login handler
+  const handleLogin = async () => {
+
+    // ---------- FRONTEND VALIDATION ----------
     if (!email || !password) {
       setError("Email and password are required");
       return;
     }
 
     setError("");
-    console.log("Login success", { email, password });
+
+    // ---------- BACKEND API CALL ----------
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      // If backend sends error (invalid credentials)
+      if (!response.ok) {
+        setError(data.message || "Login failed");
+        setSuccess("");
+        return;
+      }
+
+      // ---------- SUCCESS ----------
+      setSuccess("Login successful 🎉");
+      setError("");
+
+      // Store JWT token in localStorage
+      // This token proves user is authenticated
+      localStorage.setItem("token", data.token);
+
+      // Clear form fields
+      setEmail("");
+      setPassword("");
+
+      // Hide success message after 3 seconds
+      // and redirect user to dashboard / home
+      setTimeout(() => {
+        setSuccess("");
+        navigate("/dashboard"); // you can change this route later
+      }, 1500);
+
+    } catch (err) {
+      // Server / network error
+      setError("Server error. Please try again later.");
+      setSuccess("");
+    }
   };
 
   return (
@@ -63,10 +120,17 @@ function Login() {
           </div>
         </div>
 
-        {/* Error */}
+        {/* Error message */}
         {error && (
           <p className="text-sm text-red-600 mt-2">
             {error}
+          </p>
+        )}
+
+        {/* Success message (auto hides after 3 sec) */}
+        {success && (
+          <p className="text-sm text-green-600 mt-2">
+            {success}
           </p>
         )}
 

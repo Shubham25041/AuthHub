@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Signup() {
   const [form, setForm] = useState({
@@ -9,11 +9,23 @@ function Signup() {
     password: "",
     confirmPassword: ""
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Used to show validation / backend error messages
   const [error, setError] = useState("");
 
-  const handleSignup = () => {
+  // Used to show success message for 3 seconds
+  const [success, setSuccess] = useState("");
+
+  // Used to redirect user after successful signup
+  const navigate = useNavigate();
+
+  // Signup handler
+  const handleSignup = async () => {
+
+    // ---------- FRONTEND VALIDATION ----------
     if (!form.name || !form.email || !form.password || !form.confirmPassword) {
       setError("All fields are required");
       return;
@@ -34,8 +46,56 @@ function Signup() {
       return;
     }
 
+    // Clear previous errors
     setError("");
-    console.log("Signup success", form);
+
+    // ---------- BACKEND API CALL ----------
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // Backend only needs email & password
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      // If backend sends error (user exists, validation fail)
+      if (!response.ok) {
+        setError(data.message || "Signup failed");
+        setSuccess("");
+        return;
+      }
+
+      // ---------- SUCCESS ----------
+      setSuccess("User created successfully 🎉");
+      setError("");
+
+      // Reset form after successful signup
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      // Hide success message after 3 seconds
+      // and redirect user to login page
+      setTimeout(() => {
+        setSuccess("");
+        navigate("/login");
+      }, 3000);
+
+    } catch (err) {
+      // Server / network error
+      setError("Server error. Please try again later.");
+      setSuccess("");
+    }
   };
 
   return (
@@ -103,7 +163,9 @@ function Signup() {
             <input
               type={showConfirmPassword ? "text" : "password"}
               value={form.confirmPassword}
-              onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, confirmPassword: e.target.value })
+              }
               className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <button
@@ -116,10 +178,17 @@ function Signup() {
           </div>
         </div>
 
-        {/* Error */}
+        {/* Error message */}
         {error && (
           <p className="text-sm text-red-600 mt-2">
             {error}
+          </p>
+        )}
+
+        {/* Success message (auto hides after 3 sec) */}
+        {success && (
+          <p className="text-sm text-green-600 mt-2">
+            {success}
           </p>
         )}
 
