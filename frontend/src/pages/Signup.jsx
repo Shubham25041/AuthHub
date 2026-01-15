@@ -7,7 +7,7 @@ function Signup() {
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -17,8 +17,11 @@ function Signup() {
 
   const navigate = useNavigate();
 
+  // -----------------------------------------
+  // SIGNUP HANDLER (Frontend → Backend)
+  // -----------------------------------------
   const handleSignup = async () => {
-    // Frontend validation
+    // 1️⃣ Frontend validation (block submit)
     if (!form.name || !form.email || !form.password || !form.confirmPassword) {
       setError("All fields are required");
       return;
@@ -41,6 +44,7 @@ function Signup() {
 
     setError("");
 
+    // 2️⃣ Backend signup API call
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/auth/signup`,
@@ -50,6 +54,7 @@ function Signup() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            name: form.name,
             email: form.email,
             password: form.password,
           }),
@@ -58,23 +63,42 @@ function Signup() {
 
       const data = await response.json();
 
+      // 3️⃣ Handle backend errors
       if (!response.ok) {
         setError(data.message || "Signup failed");
+        setSuccess("");
         return;
       }
 
-      // SUCCESS
-      setSuccess("User created successfully 🎉");
+      // 4️⃣ Success UI feedback
+      setSuccess("Account created successfully 🎉");
+      setError("");
 
-      // Redirect to login after short delay
+      // 5️⃣ Reset form
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      // 6️⃣ Redirect to login (signup ≠ authentication)
       setTimeout(() => {
         navigate("/login");
-      }, 1500);
+      }, 2000);
 
     } catch (err) {
       setError("Server error. Please try again later.");
+      setSuccess("");
     }
   };
+
+  // Disable button until all fields are filled
+  const isDisabled =
+    !form.name ||
+    !form.email ||
+    !form.password ||
+    !form.confirmPassword;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -85,56 +109,104 @@ function Signup() {
         </h1>
 
         {/* Name */}
-        <input
-          type="text"
-          placeholder="Full name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full mb-3 border px-3 py-2 rounded"
-        />
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Full name
+          </label>
+          <input
+            type="text"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
 
         {/* Email */}
-        <input
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="w-full mb-3 border px-3 py-2 rounded"
-        />
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
+          <input
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className="w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
 
         {/* Password */}
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          className="w-full mb-3 border px-3 py-2 rounded"
-        />
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Password
+          </label>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-indigo-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-3 text-gray-500"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+        </div>
 
         {/* Confirm Password */}
-        <input
-          type="password"
-          placeholder="Confirm password"
-          value={form.confirmPassword}
-          onChange={(e) =>
-            setForm({ ...form, confirmPassword: e.target.value })
-          }
-          className="w-full mb-3 border px-3 py-2 rounded"
-        />
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Confirm password
+          </label>
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              value={form.confirmPassword}
+              onChange={(e) =>
+                setForm({ ...form, confirmPassword: e.target.value })
+              }
+              className="w-full rounded-md border px-3 py-2 pr-10 focus:ring-2 focus:ring-indigo-500"
+            />
+            <button
+              type="button"
+              onClick={() =>
+                setShowConfirmPassword(!showConfirmPassword)
+              }
+              className="absolute inset-y-0 right-3 text-gray-500"
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+        </div>
 
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        {success && <p className="text-green-600 text-sm">{success}</p>}
+        {/* Messages */}
+        {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+        {success && <p className="text-sm text-green-600 mt-2">{success}</p>}
 
+        {/* Signup Button */}
         <button
           onClick={handleSignup}
-          className="w-full bg-indigo-600 text-white py-2 rounded mt-4"
+          disabled={isDisabled}
+          className={`w-full py-2.5 rounded-full font-semibold mt-4 transition
+            ${
+              isDisabled
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-indigo-600 text-white hover:bg-indigo-500"
+            }`}
         >
           Create account
         </button>
 
-        <p className="text-center text-sm mt-4">
+        {/* Login Link */}
+        <p className="text-center text-sm text-gray-600 mt-6">
           Already have an account?{" "}
-          <Link to="/login" className="text-indigo-600">
+          <Link
+            to="/login"
+            className="text-indigo-600 font-medium hover:underline"
+          >
             Log in
           </Link>
         </p>
