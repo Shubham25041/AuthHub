@@ -12,20 +12,13 @@ function Signup() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Used to show validation / backend error messages
   const [error, setError] = useState("");
-
-  // Used to show success message for 3 seconds
   const [success, setSuccess] = useState("");
 
-  // Used to redirect user after successful signup
   const navigate = useNavigate();
 
-  // Signup handler
   const handleSignup = async () => {
-
-    // ---------- FRONTEND VALIDATION ----------
+    // Frontend validation
     if (!form.name || !form.email || !form.password || !form.confirmPassword) {
       setError("All fields are required");
       return;
@@ -46,55 +39,40 @@ function Signup() {
       return;
     }
 
-    // Clear previous errors
     setError("");
 
-    // ---------- BACKEND API CALL ----------
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Backend only needs email & password
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: form.email,
+            password: form.password,
+          }),
+        }
+      );
 
       const data = await response.json();
 
-      // If backend sends error (user exists, validation fail)
       if (!response.ok) {
         setError(data.message || "Signup failed");
-        setSuccess("");
         return;
       }
 
-      // ---------- SUCCESS ----------
+      // SUCCESS
       setSuccess("User created successfully 🎉");
-      setError("");
 
-      // Reset form after successful signup
-      setForm({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
-
-      // Hide success message after 3 seconds
-      // and redirect user to login page
+      // Redirect to login after short delay
       setTimeout(() => {
-        setSuccess("");
         navigate("/login");
-      }, 3000);
+      }, 1500);
 
     } catch (err) {
-      // Server / network error
       setError("Server error. Please try again later.");
-      setSuccess("");
     }
   };
 
@@ -107,103 +85,56 @@ function Signup() {
         </h1>
 
         {/* Name */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Full name
-          </label>
-          <input
-            type="text"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Full name"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          className="w-full mb-3 border px-3 py-2 rounded"
+        />
 
         {/* Email */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
+        <input
+          type="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          className="w-full mb-3 border px-3 py-2 rounded"
+        />
 
         {/* Password */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-        </div>
+        <input
+          type="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          className="w-full mb-3 border px-3 py-2 rounded"
+        />
 
         {/* Confirm Password */}
-        <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Confirm password
-          </label>
-          <div className="relative">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              value={form.confirmPassword}
-              onChange={(e) =>
-                setForm({ ...form, confirmPassword: e.target.value })
-              }
-              className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-            >
-              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-        </div>
+        <input
+          type="password"
+          placeholder="Confirm password"
+          value={form.confirmPassword}
+          onChange={(e) =>
+            setForm({ ...form, confirmPassword: e.target.value })
+          }
+          className="w-full mb-3 border px-3 py-2 rounded"
+        />
 
-        {/* Error message */}
-        {error && (
-          <p className="text-sm text-red-600 mt-2">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {success && <p className="text-green-600 text-sm">{success}</p>}
 
-        {/* Success message (auto hides after 3 sec) */}
-        {success && (
-          <p className="text-sm text-green-600 mt-2">
-            {success}
-          </p>
-        )}
-
-        {/* Signup button */}
         <button
           onClick={handleSignup}
-          className="w-full bg-indigo-600 text-white py-2.5 rounded-full font-semibold hover:bg-indigo-500 transition mt-4"
+          className="w-full bg-indigo-600 text-white py-2 rounded mt-4"
         >
           Create account
         </button>
 
-        {/* Login link */}
-        <p className="text-center text-sm text-gray-600 mt-6">
+        <p className="text-center text-sm mt-4">
           Already have an account?{" "}
-          <Link to="/login" className="text-indigo-600 font-medium hover:underline">
+          <Link to="/login" className="text-indigo-600">
             Log in
           </Link>
         </p>

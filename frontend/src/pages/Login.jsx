@@ -6,20 +6,13 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  // Used to show error messages from validation / backend
   const [error, setError] = useState("");
-
-  // Used to show success message for 3 seconds
   const [success, setSuccess] = useState("");
 
-  // Used to redirect user after successful login
   const navigate = useNavigate();
 
-  // Login handler
   const handleLogin = async () => {
-
-    // ---------- FRONTEND VALIDATION ----------
+    // Frontend validation
     if (!email || !password) {
       setError("Email and password are required");
       return;
@@ -27,52 +20,41 @@ function Login() {
 
     setError("");
 
-    // ---------- BACKEND API CALL ----------
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/signup`
-, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
 
       const data = await response.json();
 
-      // If backend sends error (invalid credentials)
       if (!response.ok) {
         setError(data.message || "Login failed");
-        setSuccess("");
         return;
       }
 
-      // ---------- SUCCESS ----------
+      // SUCCESS
       setSuccess("Login successful 🎉");
-      setError("");
 
-      // Store JWT token in localStorage
-      // This token proves user is authenticated
+      // Store JWT token
       localStorage.setItem("token", data.token);
 
-      // Clear form fields
-      setEmail("");
-      setPassword("");
-
-      // Hide success message after 3 seconds
-      // and redirect user to dashboard / home
+      // Redirect to dashboard after short delay
       setTimeout(() => {
-        setSuccess("");
-        navigate("/dashboard"); // you can change this route later
-      }, 1500);
+        navigate("/dashboard");
+      }, 500);
 
     } catch (err) {
-      // Server / network error
       setError("Server error. Please try again later.");
-      setSuccess("");
     }
   };
 
@@ -84,7 +66,6 @@ function Login() {
           Welcome back to AuthHub
         </h1>
 
-        {/* Email */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Email
@@ -93,12 +74,10 @@ function Login() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2
-              ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"}`}
+            className="w-full rounded-md border px-3 py-2"
           />
         </div>
 
-        {/* Password */}
         <div className="mb-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Password
@@ -108,8 +87,7 @@ function Login() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full rounded-md border px-3 py-2 pr-10 focus:outline-none focus:ring-2
-                ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"}`}
+              className="w-full rounded-md border px-3 py-2 pr-10"
             />
             <button
               type="button"
@@ -121,39 +99,25 @@ function Login() {
           </div>
         </div>
 
-        {/* Error message */}
-        {error && (
-          <p className="text-sm text-red-600 mt-2">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+        {success && <p className="text-sm text-green-600 mt-2">{success}</p>}
 
-        {/* Success message (auto hides after 3 sec) */}
-        {success && (
-          <p className="text-sm text-green-600 mt-2">
-            {success}
-          </p>
-        )}
-
-        {/* Forgot password */}
         <div className="text-right mt-2 mb-6">
-          <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
+          <Link to="/forgot-password" className="text-sm text-indigo-600">
             Forgot password?
           </Link>
         </div>
 
-        {/* Login button */}
         <button
           onClick={handleLogin}
-          className="w-full bg-indigo-600 text-white py-2.5 rounded-full font-semibold hover:bg-indigo-500 transition"
+          className="w-full bg-indigo-600 text-white py-2.5 rounded-full font-semibold"
         >
           Log in
         </button>
 
-        {/* Signup link */}
         <p className="text-center text-sm text-gray-600 mt-6">
           Don’t have an account?{" "}
-          <Link to="/signup" className="text-indigo-600 font-medium hover:underline">
+          <Link to="/signup" className="text-indigo-600 font-medium">
             Sign up
           </Link>
         </p>
